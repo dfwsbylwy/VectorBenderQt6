@@ -9,13 +9,13 @@
 
 
 [general]
-name=Vector Bender
-qgisMinimumVersion=2.99
-qgisMaximumVersion=3.99
-description=Does to vectors what georefencers does to raster. This feature is also known as "rubber sheeting".
-about=Does to vectors what georefencers does to raster. This feature is also known as "rubber sheeting".
+name=VectorBenderQt6
+qgisMinimumVersion=4.0
+qgisMaximumVersion=4.99
+description=将矢量图层变形以匹配另一几何图形（橡皮筋拉伸/橡皮页变换），适配 QGIS 4 / Qt6。
+about=将矢量图层变形以匹配另一几何图形（橡皮筋拉伸/橡皮页变换），适配 QGIS 4 / Qt6。
 category=Vector
-version=0.2.1
+version=0.3.0
 author=Olivier Dalang
 email=olivier.dalang@gmail.com
 
@@ -29,7 +29,7 @@ changelog=- 2014-05-22 - Version 0.0 : intial release
     - 2014-07-17 - Version 0.1.1 : fixed bug due to misspelling
     - 2019-01-18 - Version 0.2 : Updated to Qgis 3 (Thanks to Jorge Almerio)
     - 2019-12-03 - Version 0.2.1 : bugfix (Thanks to Ben Melville) 
-
+    - 2026-09-20 - Version 0.3.0 : Adapt to QGIS 4 / Qt6 only (Wanyuan Li): PyQt6 scoped enums, Qgis.GeometryType / Qgis.LayerType, QgsRubberBand constructor, drop distutils, QGIS 3 support removed
 
 
 # tags are comma separated with spaces allowed

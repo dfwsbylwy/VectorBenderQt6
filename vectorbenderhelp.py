@@ -39,7 +39,7 @@ class VectorBenderHelp(QtWidgets.QDialog):
 
         self.helpFile = os.path.join(os.path.dirname(__file__),'README.html')
         
-        self.setWindowTitle('VectorBender')
+        self.setWindowTitle(u'VectorBenderQt6 - 帮助')
 
         txt = QTextBrowser()
         txt.setReadOnly(True)
@@ -47,7 +47,7 @@ class VectorBenderHelp(QtWidgets.QDialog):
         txt.setOpenExternalLinks(True)
         txt.setText( open(self.helpFile, 'r').read() )
 
-        cls = QPushButton('Close')
+        cls = QPushButton(u'关闭')
 
         cls.pressed.connect(self.accept)
 

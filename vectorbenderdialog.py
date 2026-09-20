@@ -16,8 +16,8 @@ class VectorBenderDialog(QtWidgets.QDialog):
     def __init__(self, iface, vb):
         QtWidgets.QDialog.__init__(self)
         uic.loadUi(os.path.join(os.path.dirname(__file__),'ui_main.ui'), self)
-        self.setFocusPolicy(Qt.ClickFocus)
-        #self.setWindowModality( Qt.ApplicationModal )
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+        #self.setWindowModality( Qt.WindowModality.ApplicationModal )
 
         self.iface = iface
         self.vb = vb
@@ -97,24 +97,24 @@ class VectorBenderDialog(QtWidgets.QDialog):
         pl = self.pairsLayer()
 
         if tbl is None:
-            self.displayMsg( "You must select a vector layer to bend !", True )
+            self.displayMsg( u"必须先选择一个待弯曲的矢量图层！", True )
             return
         if pl is None:
-            self.displayMsg( "You must select a vector (line) layer which defines the points pairs !", True )
+            self.displayMsg( u"必须先选择一个定义点配对的矢量（线）图层！", True )
             return
         if pl is tbl:
-            self.displayMsg( "The layer to bend must be different from the pairs layer !", True )
+            self.displayMsg( u"待弯曲图层不能与配对图层相同！", True )
             return            
         if not tbl.isEditable():
-            self.displayMsg( "The layer to bend must be in edit mode !", True )
+            self.displayMsg( u"待弯曲图层必须处于编辑状态！", True )
             return
         if not pl.isEditable() and self.pairsToPinsCheckBox.isChecked():
-            self.displayMsg( "The pairs layer must be in edit mode if you want to change pairs to pins !", True )
+            self.displayMsg( u"若要将配对转为固定点，配对图层必须处于编辑状态！", True )
             return
         if self.stackedWidget.currentIndex() == 0:
-            self.displayMsg("Impossible to run with an invalid transformation type.", True)
+            self.displayMsg(u"无效的变换类型，无法运行。", True)
             return            
-        self.displayMsg("Ready to go...")
+        self.displayMsg(u"准备就绪，可以运行...")
         self.runButton.setEnabled(True)
 
     def updateLayersComboboxes(self):
@@ -127,9 +127,9 @@ class VectorBenderDialog(QtWidgets.QDialog):
         self.comboBox_toBendLayer.clear()
         self.comboBox_pairsLayer.clear()
         for layer in QgsProject.instance().mapLayers().values():
-            if layer.type() == QgsMapLayer.VectorLayer:
+            if layer.type() == Qgis.LayerType.Vector:
                 self.comboBox_toBendLayer.addItem( layer.name(), layer.id() )
-                if layer.geometryType() == QgsWkbTypes.LineGeometry :
+                if layer.geometryType() == Qgis.GeometryType.Line:
                     self.comboBox_pairsLayer.addItem( layer.name(), layer.id() )
 
         if oldBendLayer is not None:
@@ -171,11 +171,11 @@ class VectorBenderDialog(QtWidgets.QDialog):
             if not l.isModified():
                 l.rollBack()
             else:
-                retval = QMessageBox.warning(self, "Stop editting", "Do you want to save the changes to layer %s ?" % l.name(), QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Save)
+                retval = QMessageBox.warning(self, u"停止编辑", u"是否保存图层 %s 的更改？" % l.name(), QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel, QMessageBox.StandardButton.Save)
 
-                if retval == QMessageBox.Save:
+                if retval == QMessageBox.StandardButton.Save:
                     l.commitChanges()
-                elif retval == QMessageBox.Discard:
+                elif retval == QMessageBox.StandardButton.Discard:
                     l.rollBack()
     def toggleEditMode_toBendLayer(self, checked):
         self.toggleEditMode(checked, True)
@@ -189,12 +189,14 @@ class VectorBenderDialog(QtWidgets.QDialog):
         """
 
         suffix = ""
-        name = "Vector Bender"
+        name = "VectorBenderQt6"
         while len( QgsProject.instance().mapLayersByName( name+suffix ) ) > 0:
             if suffix == "": suffix = " 1"
             else: suffix = " "+str(int(suffix)+1)
 
         newMemoryLayer = QgsVectorLayer("Linestring", name+suffix, "memory")
+        # QGIS 4 (Qt6): loadNamedStyle(theURI, loadFromLocalDb, ...) -- passing False
+        # keeps the historical behaviour of loading the .qml from disk only.
         newMemoryLayer.loadNamedStyle(os.path.join(os.path.dirname(__file__),'PairStyle.qml'), False)
         QgsProject.instance().addMapLayer(newMemoryLayer)
 
@@ -211,17 +213,17 @@ class VectorBenderDialog(QtWidgets.QDialog):
         self.statusLabel.setText( msg )  
     def hidePreview(self):
         if self.rubberBands is not None:
-            self.rubberBands[0].reset(QgsWkbTypes.PolygonGeometry)
-            self.rubberBands[1].reset(QgsWkbTypes.PolygonGeometry)
-            self.rubberBands[2].reset(QgsWkbTypes.PolygonGeometry)
+            self.rubberBands[0].reset(Qgis.GeometryType.Polygon)
+            self.rubberBands[1].reset(Qgis.GeometryType.Polygon)
+            self.rubberBands[2].reset(Qgis.GeometryType.Polygon)
             self.rubberBands = None
     def showPreview(self):
 
-        self.rubberBands = (QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.PolygonGeometry),QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.PolygonGeometry),QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.PolygonGeometry))
+        self.rubberBands = (QgsRubberBand(self.iface.mapCanvas(), Qgis.GeometryType.Polygon),QgsRubberBand(self.iface.mapCanvas(), Qgis.GeometryType.Polygon),QgsRubberBand(self.iface.mapCanvas(), Qgis.GeometryType.Polygon))
 
-        self.rubberBands[0].reset(QgsWkbTypes.PolygonGeometry)
-        self.rubberBands[1].reset(QgsWkbTypes.PolygonGeometry)
-        self.rubberBands[2].reset(QgsWkbTypes.PolygonGeometry)
+        self.rubberBands[0].reset(Qgis.GeometryType.Polygon)
+        self.rubberBands[1].reset(Qgis.GeometryType.Polygon)
+        self.rubberBands[2].reset(Qgis.GeometryType.Polygon)
 
         pairsLayer = self.pairsLayer()
 
@@ -231,9 +233,9 @@ class VectorBenderDialog(QtWidgets.QDialog):
         self.rubberBands[1].setColor(QColor(255,125,0))
         self.rubberBands[2].setColor(QColor(0,125,0,50))
 
-        self.rubberBands[0].setBrushStyle(Qt.Dense6Pattern)
-        self.rubberBands[1].setBrushStyle(Qt.Dense6Pattern)
-        self.rubberBands[2].setBrushStyle(Qt.NoBrush)
+        self.rubberBands[0].setBrushStyle(Qt.BrushStyle.Dense6Pattern)
+        self.rubberBands[1].setBrushStyle(Qt.BrushStyle.Dense6Pattern)
+        self.rubberBands[2].setBrushStyle(Qt.BrushStyle.NoBrush)
 
         self.rubberBands[0].setWidth(3)
         self.rubberBands[1].setWidth(3)
@@ -263,7 +265,7 @@ class VectorBenderDialog(QtWidgets.QDialog):
 
     # Events
     def eventFilter(self,object,event):
-        if event.type() == QEvent.WindowActivate:
+        if event.type() == QEvent.Type.WindowActivate:
             self.refreshStates()
         return False
 

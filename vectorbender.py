@@ -33,16 +33,14 @@ import sys
 import math
 
 # More tricky dependencies
-from distutils.version import StrictVersion
+# Note: the version check previously relied on distutils.version.StrictVersion,
+# which has been removed in Python 3.12 (used by QGIS 4 / Qt6). QGIS 4 ships a
+# recent Python, so we simply check that matplotlib is importable.
 dependenciesStatus = 2 # 2: ok, 1: too old, 0: missing
 try:
     import matplotlib.tri
-    minVersion = '1.3.0'
-    if StrictVersion(matplotlib.__version__) < StrictVersion(minVersion):
-        dependenciesStatus=1
-        QgsMessageLog.logMessage("Matplotlib version too old (%s instead of %s). You won't be able to use the bending algorithm" % (matplotlib.__version__,minVersion), 'VectorBender')
 except Exception:
-    QgsMessageLog.logMessage("Matplotlib is missing. You won't be able to use the bending algorithm", 'VectorBender')
+    QgsMessageLog.logMessage("Matplotlib is missing. You won't be able to use the bending algorithm", 'VectorBenderQt6')
     dependenciesStatus = 0
 
 # Other classes
@@ -66,14 +64,14 @@ class VectorBender:
 
     def initGui(self):
 
-        self.action = QAction( QIcon(os.path.join(os.path.dirname(__file__),'resources','icon.png')), "Vector Bender", self.iface.mainWindow())
+        self.action = QAction( QIcon(os.path.join(os.path.dirname(__file__),'resources','icon.png')), u"矢量弯曲", self.iface.mainWindow())
         self.action.triggered.connect(self.showUi)
         self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(u"&Vector Bender", self.action)
+        self.iface.addPluginToMenu(u"&矢量弯曲", self.action)
 
-        self.helpAction = QAction( QIcon(os.path.join(os.path.dirname(__file__),'resources','about.png')), "Vector Bender Help", self.iface.mainWindow())
+        self.helpAction = QAction( QIcon(os.path.join(os.path.dirname(__file__),'resources','about.png')), u"矢量弯曲帮助", self.iface.mainWindow())
         self.helpAction.triggered.connect(self.showHelp)
-        self.iface.addPluginToMenu(u"&Vector Bender", self.helpAction)
+        self.iface.addPluginToMenu(u"&矢量弯曲", self.helpAction)
 
     def showHelp(self):
         if self.aboutWindow is None:
@@ -90,8 +88,8 @@ class VectorBender:
             self.aboutWindow.close()
             self.aboutWindow = None
 
-        self.iface.removePluginMenu(u"&Vector Bender", self.action)
-        self.iface.removePluginMenu(u"&Vector Bender", self.helpAction)
+        self.iface.removePluginMenu(u"&矢量弯曲", self.action)
+        self.iface.removePluginMenu(u"&矢量弯曲", self.helpAction)
         self.iface.removeToolBarIcon(self.action)
 
     def showUi(self):
@@ -112,7 +110,7 @@ class VectorBender:
         if pairsLayer is None:
             return 0
 
-        featuresCount = len(pairsLayer.selectedFeatureIds()) if self.dlg.restrictBox_pairsLayer.isChecked() else len(pairsLayer.allFeatureIds())
+        featuresCount = len(pairsLayer.selectedFeatureIds()) if self.dlg.restrictBox_pairsLayer.isChecked() else pairsLayer.featureCount()
 
         if featuresCount == 1:
             return 1
@@ -140,41 +138,41 @@ class VectorBender:
         # Loading the delaunay
         restrictToSelection = self.dlg.restrictBox_pairsLayer.isChecked()
         if transType==4:
-            self.dlg.displayMsg( "Loading delaunay mesh (%i points) ..." % len(self.ptsA) )
+            self.dlg.displayMsg( u"正在加载 Delaunay 网格（%i 个点）..." % len(self.ptsA) )
             QCoreApplication.processEvents()
             self.transformer = BendTransformer( pairsLayer, restrictToSelection, self.dlg.bufferValue() )
         elif transType==3:
-            self.dlg.displayMsg( "Loading affine transformation vectors..."  )
+            self.dlg.displayMsg( u"正在加载仿射变换向量..."  )
             self.transformer = AffineTransformer( pairsLayer, restrictToSelection )
         elif transType==2:
-            self.dlg.displayMsg( "Loading linear transformation vectors..."  )
+            self.dlg.displayMsg( u"正在加载线性变换向量..."  )
             self.transformer = LinearTransformer( pairsLayer, restrictToSelection )
         elif transType==1:
-            self.dlg.displayMsg( "Loading translation vector..."  )
+            self.dlg.displayMsg( u"正在加载平移向量..."  )
             self.transformer = TranslationTransformer( pairsLayer, restrictToSelection )
         else:
-            self.dlg.displayMsg( "INVALID TRANSFORMATION TYPE - YOU SHOULDN'T HAVE BEEN ABLE TO HIT RUN" )
+            self.dlg.displayMsg( u"无效的变换类型——你不应该能点运行" )
             return
 
         # Starting to iterate
         features = toBendLayer.getFeatures() if not self.dlg.restrictBox_toBendLayer.isChecked() else toBendLayer.selectedFeatures()
 
         count = toBendLayer.featureCount() if not self.dlg.restrictBox_toBendLayer.isChecked() else len(features)
-        self.dlg.displayMsg( "Starting to iterate through %i features..." % count )
+        self.dlg.displayMsg( u"开始遍历 %i 个要素..." % count )
         QCoreApplication.processEvents()
 
-        toBendLayer.beginEditCommand("Feature bending")
+        toBendLayer.beginEditCommand(u"要素弯曲")
         for i,feature in enumerate(features):
 
             self.dlg.progressBar.setValue( int(100.0*float(i)/float(count)) )
-            self.dlg.displayMsg( "Aligning features %i out of %i..."  % (i, count))
+            self.dlg.displayMsg( u"正在对齐要素 %i / %i..."  % (i, count))
             QCoreApplication.processEvents()
 
             geom = feature.geometry()
 
             #TODO : this cood be much simple if we could iterate through to vertices and use QgsGeometry.moveVertex(x,y,index), but QgsGeometry.vertexAt(index) doesn't tell wether the index exists, so there's no clean way to iterate...
 
-            if geom.type() == QgsWkbTypes.PointGeometry:
+            if geom.type() == Qgis.GeometryType.Point:
 
                 if not geom.isMultipart():
                     # SINGLE PART POINT
@@ -189,7 +187,7 @@ class VectorBender:
                         newListA.append( self.transformer.map(p) )
                     newGeom = QgsGeometry.fromMultiPointXY( newListA )
 
-            elif geom.type() == QgsWkbTypes.LineGeometry:
+            elif geom.type() == Qgis.GeometryType.Line:
 
                 if not geom.isMultipart():
                     # SINGLE PART LINESTRING
@@ -210,7 +208,7 @@ class VectorBender:
                         newListA.append( newListB )
                     newGeom = QgsGeometry.fromMultiPolylineXY( newListA )
 
-            elif geom.type() == QgsWkbTypes.PolygonGeometry:
+            elif geom.type() == Qgis.GeometryType.Polygon:
 
                 if not geom.isMultipart():
                     # SINGLE PART POLYGON
@@ -254,14 +252,14 @@ class VectorBender:
 
             count = pairsLayer.featureCount() if not self.dlg.restrictBox_pairsLayer.isChecked() else len(features)
             self.dlg.progressBar.setValue( 0 )
-            self.dlg.displayMsg( "Starting to transform %i pairs to pins..." % count )
+            self.dlg.displayMsg( u"开始将 %i 个配对转为固定点..." % count )
             QCoreApplication.processEvents()
 
-            pairsLayer.beginEditCommand("Transforming pairs to pins")
+            pairsLayer.beginEditCommand(u"将配对转为固定点")
             for i,feature in enumerate(features):
 
                 self.dlg.progressBar.setValue( int(100.0*float(i)/float(count)) )
-                self.dlg.displayMsg( "Transforming pair to pin %i out of %i..."  % (i, count))
+                self.dlg.displayMsg( u"正在将配对转为固定点 %i / %i..."  % (i, count))
                 QCoreApplication.processEvents()
 
                 geom = feature.geometry().asPolyline()
@@ -271,6 +269,6 @@ class VectorBender:
 
             pairsLayer.endEditCommand()
 
-        self.dlg.displayMsg( "Finished !" )
+        self.dlg.displayMsg( u"完成！" )
         self.dlg.progressBar.setValue( 100 )
         pairsLayer.repaintRequested.emit()

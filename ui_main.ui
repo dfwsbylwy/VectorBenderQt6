@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>VectorBender</string>
+   <string>VectorBenderQt6 - 矢量弯曲</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
    <property name="fieldGrowthPolicy">
@@ -35,7 +35,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Layer to bend</string>
+      <string>待弯曲图层</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -57,7 +57,7 @@
      <item>
       <widget class="QToolButton" name="editModeButton_toBendLayer">
        <property name="text">
-        <string>toggle edit</string>
+        <string>切换编辑</string>
        </property>
        <property name="icon">
         <iconset>
@@ -71,7 +71,7 @@
      <item>
       <widget class="QCheckBox" name="restrictBox_toBendLayer">
        <property name="text">
-        <string>restrict to selection</string>
+        <string>仅处理选中要素</string>
        </property>
       </widget>
      </item>
@@ -86,7 +86,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Pairs layer</string>
+      <string>配对图层</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -98,7 +98,7 @@
      <item>
       <widget class="QToolButton" name="createMemoryLayerButton">
        <property name="text">
-        <string>create memory layer</string>
+        <string>创建临时图层</string>
        </property>
        <property name="icon">
         <iconset>
@@ -119,7 +119,7 @@
      <item>
       <widget class="QToolButton" name="editModeButton_pairsLayer">
        <property name="text">
-        <string>toggle edit</string>
+        <string>切换编辑</string>
        </property>
        <property name="icon">
         <iconset>
@@ -133,7 +133,7 @@
      <item>
       <widget class="QCheckBox" name="restrictBox_pairsLayer">
        <property name="text">
-        <string>restrict to selection</string>
+        <string>仅处理选中要素</string>
        </property>
       </widget>
      </item>
@@ -142,7 +142,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Change pairs to pins</string>
+      <string>将配对转为固定点</string>
      </property>
     </widget>
    </item>
@@ -157,10 +157,10 @@
         </size>
        </property>
        <property name="text">
-        <string>(not recommended if you restrict to selection)</string>
+        <string>（若勾选“仅处理选中要素”则不推荐）</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -169,7 +169,7 @@
    <item row="3" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Transformation type</string>
+      <string>变换类型</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
@@ -200,7 +200,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Invalid. Please define pairs by creating lines in the pairs layers.</string>
+             <string>无效。请在配对图层中创建线以定义配对。</string>
             </property>
             <property name="textFormat">
              <enum>Qt::AutoText</enum>
@@ -232,7 +232,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Translation - exactly 1 pair</string>
+             <string>平移 - 恰好 1 个配对</string>
             </property>
            </widget>
           </item>
@@ -261,7 +261,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Linear - exactly 2 pairs</string>
+             <string>线性 - 恰好 2 个配对</string>
             </property>
            </widget>
           </item>
@@ -290,7 +290,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Affine - exactly 3 pairs</string>
+             <string>仿射 - 恰好 3 个配对</string>
             </property>
            </widget>
           </item>
@@ -316,7 +316,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Bending - 4 or more pairs</string>
+             <string>弯曲 - 4 个及以上配对</string>
             </property>
            </widget>
           </item>
@@ -345,7 +345,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Buffer</string>
+             <string>缓冲区</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -367,7 +367,7 @@
              <double>999999999.990000009536743</double>
             </property>
             <property name="value">
-             <double>25.000000000000000</double>
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -377,7 +377,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>preview</string>
+             <string>预览</string>
             </property>
            </widget>
           </item>
@@ -397,7 +397,7 @@
              <string notr="true">color:#F00</string>
             </property>
             <property name="text">
-             <string>Bending transformation unavailable because you miss dependencies. Please read the help.</string>
+             <string>弯曲变换不可用：缺少依赖。请查看帮助。</string>
             </property>
            </widget>
           </item>
@@ -411,7 +411,7 @@
    <item row="4" column="0" colspan="2">
     <widget class="QPushButton" name="runButton">
      <property name="text">
-      <string>Run</string>
+      <string>运行</string>
      </property>
      <property name="default">
       <bool>true</bool>
@@ -427,7 +427,7 @@
       <item>
        <widget class="QLabel" name="statusLabel">
         <property name="text">
-         <string>Idle</string>
+         <string>就绪</string>
         </property>
        </widget>
       </item>
